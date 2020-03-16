@@ -17,7 +17,7 @@ $(document).ready(function(){
             data : JSON.stringify(Input),
             success : function(data)
             { 
-                console.log("Ajax Ss");
+                
 
                 if (data.is_success == "success"){
                     if (data.alert){
