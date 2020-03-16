@@ -14,14 +14,12 @@ def index(request):
 
 @csrf_exempt
 def ticket_book(request):
-    print(request,"REQUEST")
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
     name = body['name']
     age = body['age']
     gender = body['gender']
     berth = body['berth']
-    print (BookTicket.objects.filter(coach='S3').count(),"BookTicket.objects.filter(coach='S3').count()")
 
     error_message = ""
     
@@ -31,7 +29,7 @@ def ticket_book(request):
 
 
     if berth == 'Lower' and int(age) < 60:
-        if int(age) > 18:
+        if int(age) > 18 and gender == 'Male':
             error_message = "Lower berth should be allocated for persons whose age is above 60."
 
 
@@ -40,23 +38,18 @@ def ticket_book(request):
         error_message = "Passenger name already exists."
 
     if error_message:
-        print(error_message,"error_message")
         return JsonResponse({'is_success': 'unsuccess','error_message': error_message})
 
     if request.method == 'POST' and request.is_ajax: 
-        print("POST")
         tickets = BookTicket.objects.all()
-        print(tickets,"tickets")
 
         if not tickets:
             BookTicket(name=name,age=age,gender=gender,berth_preference=berth,coach='S1',status='Confirmed').save()
             return JsonResponse({'is_success': 'success','msg':"Booking Confirmed Successfully"})
 
         else:
-            print("HJKL")
             # if BookTicket.objects.filter(~Q(status = False)).count() < 32:
             if BookTicket.objects.filter(status='Confirmed').count() < 24:
-                print("24")
                 count1 = BookTicket.objects.filter(coach='S1').count()
                 count2 = BookTicket.objects.filter(coach='S2').count()
                 count3 = BookTicket.objects.filter(coach='S3').count()
@@ -117,26 +110,19 @@ def ticket_book(request):
                             return JsonResponse({'is_success': 'success','msg':"S3 Coach Booking Confirmed Successfully"})
 
             else:
-                print("ELSE")
                 if berth == 'Lower' or  berth == 'Side':
-                    print("RAC")
                     if BookTicket.objects.filter(status='RAC').count() < 3:
                         BookTicket(name=name,age=age,gender=gender,berth_preference=berth,coach='S4',status='RAC').save()
                         return JsonResponse({'is_success': 'success','msg':"S4 Coach Booking Confirmed Successfully"})
                     else:
-                        return JsonResponse({'is_success': 'unsuccess','error_message': "RAC Passengers seats fully allocated,No seats Available,Try other berth execpt side & Lower"})
+                        return JsonResponse({'is_success': 'unsuccess','error_message': "RAC Passengers seats fully allocated,No seats Available,Try other berth execpt Side & Lower"})
 
                 else:
-                    print("Waiting")
                     if BookTicket.objects.filter(status='Waiting').count() < 5:
-                        print("Waiting <5")
                         if BookTicket.objects.filter(coach='S3').count() != 8:
-                            print("Waiting s3")
-
                             BookTicket(name=name,age=age,gender=gender,berth_preference=berth,coach='S3',status='Waiting').save()
                             return JsonResponse({'is_success': 'success','msg':"S3 Coach Booking Confirmed Successfully"})
                         else:
-                            print("Waiting wlse")
                             BookTicket(name=name,age=age,gender=gender,berth_preference=berth,coach='S4',status='Waiting').save()
                             return JsonResponse({'is_success': 'success','msg':"S4 Coach Booking Confirmed Successfully"})
 
@@ -144,7 +130,6 @@ def ticket_book(request):
                         message = "No Seats available!" 
                         return JsonResponse({'is_success':'success','alert': message})
             # else:
-            #     print("Else data")
             #     return JsonResponse({'is_success':'success','alert':"Ticket Booking Closed"})
 
     else:
