@@ -10,7 +10,7 @@ from django.db.models import Q
 
 # Create your views here.
 def index(request):
-    return render(request,'ticket_book.html')
+    return render(request,'index.html')
 
 @csrf_exempt
 def ticket_book(request):
